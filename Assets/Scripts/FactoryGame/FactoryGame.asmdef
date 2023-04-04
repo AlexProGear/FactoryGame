@@ -1,0 +1,17 @@
+{
+    "name": "FactoryGame",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2b9def1ecc58ec042a07d1388b5eb4cb",
+        "GUID:b07b96c86123fd74c805c730004eee4c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
