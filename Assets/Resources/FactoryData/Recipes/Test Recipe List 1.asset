@@ -15,5 +15,6 @@ MonoBehaviour:
   recipes:
   - inputs:
     - {fileID: 11400000, guid: 05b86c779b50a4b459af099f02476e1b, type: 2}
+    - {fileID: 11400000, guid: dcc5cbde6130cb94482d373e2ad79511, type: 2}
     outputs:
-    - {fileID: 11400000, guid: 37e54c1a9f267ef4d8fdb90cb1649c48, type: 2}
+    - {fileID: 11400000, guid: 36e8d5b58581bb64a944439f1bbf4f65, type: 2}

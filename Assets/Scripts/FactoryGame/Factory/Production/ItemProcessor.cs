@@ -13,7 +13,7 @@ namespace FactoryGame.Factory.Production
 {
     public class ItemProcessor : MonoBehaviour
     {
-        [SerializeField] private RecipesData recipes;
+        [SerializeField] private RecipesListData recipes;
         [SerializeField] private ItemSlot[] inputSlots;
         [SerializeField] private ItemSlot[] outputSlots;
         [SerializeField] private float itemTransferTime = 0.5f;

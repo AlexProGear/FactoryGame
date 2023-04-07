@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using FactoryGame.Data;
@@ -12,24 +14,30 @@ namespace FactoryGame.Factory.World
     {
         [SerializeField] private InteractorData interactorData;
         [SerializeField] private float interactionDelay;
-        [SerializeField] ItemFilter filter;
+        [SerializeField] private ItemFilter filter;
 
-        public IReadOnlyList<ItemObject> Inventory => _inventory;
+        public IReadOnlyList<ItemObject> Inventory => inventory;
 
-        private readonly List<ItemObject> _inventory = new List<ItemObject>();
+        protected readonly List<ItemObject> inventory = new List<ItemObject>();
+
         private Vector3 _lastPos;
         private Vector3 _deltaPos;
         private float _standingTime;
+        private bool _transferInProgress;
 
         private bool CanInteract => _standingTime > interactionDelay;
 
-        private void Start()
+        protected virtual void Start()
         {
             GetComponent<SphereCollider>().radius = interactorData.pickupRadius;
             _lastPos = transform.position;
         }
 
-        private void Update()
+        protected virtual void OnDestroy()
+        {
+        }
+
+        protected virtual void Update()
         {
             UpdateStandingTime();
         }
@@ -58,20 +66,21 @@ namespace FactoryGame.Factory.World
             DOTween.Sequence()
                 .Join(item.transform.DOLocalJump(Vector3.up, 0, 1, interactorData.itemTransferTime))
                 .Join(item.transform.DOScale(Vector3.zero, interactorData.itemTransferTime))
-                .OnComplete(() => _inventory.Add(item));
+                .OnComplete(() => { inventory.Add(item); });
 
             item.TogglePhysics(false);
+            StartCoroutine(ItemTransferCooldown());
             return true;
         }
 
         private bool CanPickItem(ItemObject item)
         {
-            return filter.IsItemAllowed(item.data);
+            return !_transferInProgress && filter.IsItemAllowed(item.data);
         }
 
         private ItemObject ExtractItem(ItemData itemType)
         {
-            ItemObject result = _inventory.FirstOrDefault(item => item.data == itemType);
+            ItemObject result = inventory.FirstOrDefault(item => item.data == itemType);
             if (result == null)
                 return null;
 
@@ -80,7 +89,7 @@ namespace FactoryGame.Factory.World
 
         private ItemObject ExtractItem(ItemObject item)
         {
-            _inventory.Remove(item);
+            inventory.Remove(item);
             item.transform.SetParent(null, true);
             item.TogglePhysics(true);
             return item;
@@ -128,6 +137,9 @@ namespace FactoryGame.Factory.World
             var slot = other.GetComponent<ItemSlot>();
             if (slot != null)
             {
+                if (_transferInProgress)
+                    return true;
+
                 switch (slot.Mode)
                 {
                     case SlotMode.Input:
@@ -151,25 +163,31 @@ namespace FactoryGame.Factory.World
 
         private void TryInsertItem(ItemSlot slot)
         {
-            foreach (var itemObject in _inventory)
-            {
-                if (!slot.CanHoldItem(itemObject.data))
-                    continue;
-                ExtractItem(itemObject);
-                var itemTransform = itemObject.transform;
-                slot.PreInsertItem(itemObject);
-                DOTween.Sequence()
-                    .Join(itemTransform.DOScale(Vector3.one, interactorData.itemTransferTime))
-                    .Join(itemTransform.DOJump(slot.transform.position, 1, 1, interactorData.itemTransferTime))
-                    .OnComplete(() =>
+            ItemObject itemObject = inventory.FirstOrDefault(itemObject => slot.CanHoldItem(itemObject.data));
+            if (itemObject == null)
+                return;
+
+            ExtractItem(itemObject);
+            var itemTransform = itemObject.transform;
+            slot.PreInsertItem(itemObject);
+            DOTween.Sequence()
+                .Join(itemTransform.DOScale(Vector3.one, interactorData.itemTransferTime))
+                .Join(itemTransform.DOJump(slot.transform.position, 1, 1, interactorData.itemTransferTime))
+                .OnComplete(() =>
+                {
+                    if (!slot.InsertItem(itemObject))
                     {
-                        if (!slot.InsertItem(itemObject))
-                        {
-                            Debug.LogError("[ItemInteractor] Cannot insert item into slot. What? How?", this);
-                        }
-                    });
-                break;
-            }
+                        Debug.LogError("[ItemInteractor] Cannot insert item into slot. What? How?", this);
+                    }
+                });
+            StartCoroutine(ItemTransferCooldown());
+        }
+
+        private IEnumerator ItemTransferCooldown()
+        {
+            _transferInProgress = true;
+            yield return new WaitForSeconds(interactorData.itemTransferCooldown);
+            _transferInProgress = false;
         }
     }
 }

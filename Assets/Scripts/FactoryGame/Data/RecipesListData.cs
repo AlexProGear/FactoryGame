@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace FactoryGame.Data
 {
-    [CreateAssetMenu(menuName = "Factory Data/" + nameof(RecipesData))]
-    public class RecipesData : ScriptableObject
+    [CreateAssetMenu(menuName = "Factory Data/" + nameof(RecipesListData))]
+    public class RecipesListData : ScriptableObject
     {
         [TableList(AlwaysExpanded = true)]
         public Recipe[] recipes;

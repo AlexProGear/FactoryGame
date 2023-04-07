@@ -13,9 +13,9 @@ namespace Utils.Helpers
             return wrapper?.items;
         }
 
-        public static string ArrayToJson<T>(T[] list, bool prettyPrint = false)
+        public static string ArrayToJson<T>(IEnumerable<T> data, bool prettyPrint = false)
         {
-            ArrayWrapper<T> wrapper = new ArrayWrapper<T> { items = list };
+            ArrayWrapper<T> wrapper = new ArrayWrapper<T> { items = data.ToArray() };
             return JsonUtility.ToJson(wrapper, prettyPrint);
         }
 
@@ -27,13 +27,12 @@ namespace Utils.Helpers
                 .ToDictionary(pair => pair.key, pair => pair.value);
         }
 
-        public static string DictionaryToJson<TKey, TValue>(Dictionary<TKey, TValue> dictionary,
-            bool prettyPrint = false)
+        public static string DictionaryToJson<TKey, TValue>(Dictionary<TKey, TValue> data, bool prettyPrint = false)
         {
             DictionaryWrapper<TKey, TValue> wrapper = new DictionaryWrapper<TKey, TValue>
             {
-                keys = dictionary.Keys.ToArray(),
-                values = dictionary.Values.ToArray()
+                keys = data.Keys.ToArray(),
+                values = data.Values.ToArray()
             };
 
             return JsonUtility.ToJson(wrapper, prettyPrint);
