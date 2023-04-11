@@ -41,6 +41,8 @@ namespace FactoryGame.Factory.World
                 newItem.TogglePhysics(false);
                 inventory.Add(newItem);
             }
+
+            InventoryChanged?.Invoke();
         }
     }
 }

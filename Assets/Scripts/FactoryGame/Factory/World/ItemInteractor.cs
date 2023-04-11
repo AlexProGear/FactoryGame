@@ -7,6 +7,7 @@ using FactoryGame.Data;
 using FactoryGame.Factory.Logic;
 using FactoryGame.Factory.Production;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace FactoryGame.Factory.World
 {
@@ -17,6 +18,7 @@ namespace FactoryGame.Factory.World
         [SerializeField] private ItemFilter filter;
 
         public IReadOnlyList<ItemObject> Inventory => inventory;
+        public UnityEvent InventoryChanged = new UnityEvent();
 
         protected readonly List<ItemObject> inventory = new List<ItemObject>();
 
@@ -66,7 +68,11 @@ namespace FactoryGame.Factory.World
             DOTween.Sequence()
                 .Join(item.transform.DOLocalJump(Vector3.up, 0, 1, interactorData.itemTransferTime))
                 .Join(item.transform.DOScale(Vector3.zero, interactorData.itemTransferTime))
-                .OnComplete(() => { inventory.Add(item); });
+                .OnComplete(() =>
+                {
+                    inventory.Add(item);
+                    InventoryChanged?.Invoke();
+                });
 
             item.TogglePhysics(false);
             StartCoroutine(ItemTransferCooldown());
@@ -90,6 +96,7 @@ namespace FactoryGame.Factory.World
         private ItemObject ExtractItem(ItemObject item)
         {
             inventory.Remove(item);
+            InventoryChanged?.Invoke();
             item.transform.SetParent(null, true);
             item.TogglePhysics(true);
             return item;
@@ -142,16 +149,12 @@ namespace FactoryGame.Factory.World
 
                 switch (slot.Mode)
                 {
-                    case SlotMode.Input:
+                    case SlotMode.Input when CanInteract:
                         TryInsertItem(slot);
                         break;
-                    case SlotMode.Output:
-                        if (slot.HasItem && CanPickItem(slot.HeldItem))
-                        {
-                            ItemObject item = slot.ExtractItem();
-                            TryPickItem(item);
-                        }
-
+                    case SlotMode.Output when slot.HasItem && CanPickItem(slot.HeldItem):
+                        ItemObject item = slot.ExtractItem();
+                        TryPickItem(item);
                         break;
                 }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
@@ -15,11 +14,12 @@ namespace FactoryGame.SaveSystem
     public class SceneSaver : SerializedMonoBehaviour
     {
         [OdinSerialize] private ISavable[] savableObjects;
+
         private JsonSaveFile _jsonSaveFile;
 
         private void Start()
         {
-            _jsonSaveFile = new JsonSaveFile(gameObject.scene.name);
+            InitSaveFile();
             if (_jsonSaveFile.HasData)
             {
                 LoadData();
@@ -29,6 +29,11 @@ namespace FactoryGame.SaveSystem
             {
                 savableObject.ForceSave = SaveData;
             }
+        }
+
+        private void InitSaveFile()
+        {
+            _jsonSaveFile = new JsonSaveFile(gameObject.scene.name);
         }
 
         private void OnApplicationQuit()
@@ -64,6 +69,12 @@ namespace FactoryGame.SaveSystem
 
         private void SaveData()
         {
+            if (_jsonSaveFile == null)
+            {
+                Debug.LogWarning("[SceneSaver] SaveData called before initialization");
+                return;
+            }
+
             Dictionary<string, string> saveData = new Dictionary<string, string>();
             foreach (ISavable savable in savableObjects)
             {
@@ -73,6 +84,7 @@ namespace FactoryGame.SaveSystem
                     Debug.LogError($"[SceneSaver] Abandoning save: savable object is null. Was it destroyed?");
                     return;
                 }
+
                 string id = GetUniqueId(savable);
                 if (id != null)
                 {
@@ -99,6 +111,15 @@ namespace FactoryGame.SaveSystem
             }
 
             return componentId.uniqueId;
+        }
+
+        [Button]
+        public void DeleteSaveFile()
+        {
+            if (_jsonSaveFile == null)
+                InitSaveFile();
+            _jsonSaveFile.Delete();
+            Debug.Log("[SceneSaver] Save file deleted");
         }
     }
 }
