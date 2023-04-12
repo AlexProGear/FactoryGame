@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 585d2fe7b6fd404395c6c3f2b02a59b4, type: 3}
-  m_Name: ItemResourceOre
+  m_Name: ItemResourceMetal
   m_EditorClassIdentifier: 
   regenTime: 5
   hitCooldown: 1

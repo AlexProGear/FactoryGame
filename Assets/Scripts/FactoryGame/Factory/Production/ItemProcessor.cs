@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
@@ -22,6 +23,8 @@ namespace FactoryGame.Factory.Production
         [SerializeField] private Transform shakingBody;
         [SerializeField] private Transform inputInto;
         [SerializeField] private Transform outputFrom;
+
+        public event Action ProcessingFinished;
 
         private readonly ItemSpawner _itemSpawner = new ItemSpawner();
         private bool _isCrafting;
@@ -96,7 +99,11 @@ namespace FactoryGame.Factory.Production
                 sequence.Append(itemSequence);
             }
 
-            sequence.OnComplete(() => _isCrafting = false);
+            sequence.OnComplete(() =>
+            {
+                _isCrafting = false;
+                ProcessingFinished?.Invoke();
+            });
         }
 
         private (Recipe recipe, List<ItemSlot> input, List<ItemSlot> output) FindFirstValidRecipe()

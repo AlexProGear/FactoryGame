@@ -109,7 +109,7 @@ GameObject:
   - component: {fileID: 8478649129999198468}
   - component: {fileID: 4739032459377746129}
   m_Layer: 6
-  m_Name: ItemOre
+  m_Name: ItemMetal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

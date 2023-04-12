@@ -5,10 +5,6 @@ using Sirenix.Serialization;
 using UnityEngine;
 using Utils.Helpers;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 namespace FactoryGame.SaveSystem
 {
     public class SceneSaver : SerializedMonoBehaviour
@@ -23,6 +19,13 @@ namespace FactoryGame.SaveSystem
             if (_jsonSaveFile.HasData)
             {
                 LoadData();
+            }
+            else
+            {
+                foreach (var savable in savableObjects)
+                {
+                    savable.LoadSaveData(null);
+                }
             }
 
             foreach (ISavable savableObject in savableObjects)
@@ -45,14 +48,6 @@ namespace FactoryGame.SaveSystem
         {
             SaveData();
         }
-
-#if UNITY_EDITOR
-        [Button, InitializeOnEnterPlayMode]
-        public void CollectSceneSavableObjects()
-        {
-            savableObjects = FindObjectsOfType<MonoBehaviour>(true).OfType<ISavable>().ToArray();
-        }
-#endif
 
         private void LoadData()
         {
@@ -111,6 +106,12 @@ namespace FactoryGame.SaveSystem
             }
 
             return componentId.uniqueId;
+        }
+
+        [Button]
+        public void CollectSceneSavableObjects()
+        {
+            savableObjects = FindObjectsOfType<MonoBehaviour>(true).OfType<ISavable>().ToArray();
         }
 
         [Button]

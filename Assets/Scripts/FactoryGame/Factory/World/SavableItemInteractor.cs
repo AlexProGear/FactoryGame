@@ -24,6 +24,9 @@ namespace FactoryGame.Factory.World
 
         void ISavable.LoadSaveData(string data)
         {
+            if (data == null)
+                return;
+
             string[] itemNames = JsonHelpers.ArrayFromJson<string>(data);
             if (itemNames.IsNullOrEmpty())
                 return;

@@ -19,6 +19,7 @@ namespace FactoryGame.Factory.World
 
         public IReadOnlyList<ItemObject> Inventory => inventory;
         public UnityEvent InventoryChanged = new UnityEvent();
+        public event Action<ItemData> ItemPicked; 
 
         protected readonly List<ItemObject> inventory = new List<ItemObject>();
 
@@ -72,6 +73,7 @@ namespace FactoryGame.Factory.World
                 {
                     inventory.Add(item);
                     InventoryChanged?.Invoke();
+                    ItemPicked?.Invoke(item.data);
                 });
 
             item.TogglePhysics(false);

@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using DG.Tweening;
 using FactoryGame.Data;
 using FactoryGame.Factory.World;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace FactoryGame.Factory.Production
 {
@@ -17,13 +19,17 @@ namespace FactoryGame.Factory.Production
         [SerializeField, ValidateInput("@$value != null")]
         private Transform spawnedObjectsParent;
 
+        public event Action ItemsSpawned;
+
         private int _health;
         private float _hitCooldown;
         private readonly IItemSpawner _itemSpawner = new ItemSpawner();
         private Vector3 _objectScale;
+        private NavMeshObstacle _navMeshObstacle;
 
         private void Start()
         {
+            _navMeshObstacle = GetComponent<NavMeshObstacle>();
             _health = data.hitCount;
             _objectScale = viewModel.localScale;
             _itemSpawner.Initialize();
@@ -53,6 +59,7 @@ namespace FactoryGame.Factory.Production
                 newItemTransform.position = spawnPosition.position;
                 newItem.OnSpawn();
             }
+            ItemsSpawned?.Invoke();
         }
 
         private IEnumerator HitCooldown()
@@ -72,8 +79,10 @@ namespace FactoryGame.Factory.Production
         {
             viewModel.DOKill();
             viewModel.DOScale(Vector3.zero, 0.5f);
+            _navMeshObstacle.enabled = false;
             yield return new WaitForSeconds(data.regenTime);
             viewModel.DOScale(_objectScale, 0.5f).OnComplete(() => { _health = data.hitCount; });
+            _navMeshObstacle.enabled = true;
         }
 
         private void OnDrawGizmos()
